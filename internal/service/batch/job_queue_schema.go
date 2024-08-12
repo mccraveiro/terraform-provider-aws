@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-provider-aws/internal/framework"
 	fwtypes "github.com/hashicorp/terraform-provider-aws/internal/framework/types"
+	"github.com/hashicorp/terraform-provider-aws/internal/tags"
 	tftags "github.com/hashicorp/terraform-provider-aws/internal/tags"
 	"github.com/hashicorp/terraform-provider-aws/names"
 )
@@ -99,7 +100,7 @@ func upgradeJobQueueResourceStateV0toV1(ctx context.Context, req resource.Upgrad
 		JobQueueName:            jobQueueDataV0.Name,
 		Priority:                jobQueueDataV0.Priority,
 		State:                   jobQueueDataV0.State,
-		Tags:                    jobQueueDataV0.Tags,
+		Tags:                    tags.NewMapFromMapValue(jobQueueDataV0.Tags),
 		TagsAll:                 jobQueueDataV0.TagsAll,
 		Timeouts:                jobQueueDataV0.Timeouts,
 	}
