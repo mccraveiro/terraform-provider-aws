@@ -187,8 +187,6 @@ func TestAccAppConfigEnvironment_tags(t *testing.T) {
 }
 
 func TestAccAppConfigEnvironment_tags_null(t *testing.T) {
-	t.Skip("Tags with null values are not correctly handled with the Plugin Framework")
-
 	ctx := acctest.Context(t)
 	resourceName := "aws_appconfig_environment.test"
 	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
@@ -211,13 +209,22 @@ func TestAccAppConfigEnvironment_tags_null(t *testing.T) {
 					testAccCheckEnvironmentExists(ctx, resourceName),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.MapExact(map[string]knownvalue.Check{
+						acctest.CtKey1: knownvalue.Null(),
+					})),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTagsAll), knownvalue.MapExact(map[string]knownvalue.Check{
+						acctest.CtKey1: knownvalue.StringExact(""),
+					})),
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
-						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.Null()),
-						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTagsAll), knownvalue.MapExact(map[string]knownvalue.Check{})),
+						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.MapExact(map[string]knownvalue.Check{
+							acctest.CtKey1: knownvalue.Null(),
+						})),
+						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTagsAll), knownvalue.MapExact(map[string]knownvalue.Check{
+							acctest.CtKey1: knownvalue.StringExact(""),
+						})),
 					},
 				},
 			},
@@ -232,15 +239,9 @@ func TestAccAppConfigEnvironment_tags_null(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-			},
-			{
-				ConfigDirectory: config.StaticDirectory("testdata/Environment/tags/"),
-				ConfigVariables: config.Variables{
-					acctest.CtRName:        config.StringVariable(rName),
-					acctest.CtResourceTags: nil,
+				ImportStateVerifyIgnore: []string{
+					"tags.key1", // The canonical value returned by the AWS API is ""
 				},
-				PlanOnly:           true,
-				ExpectNonEmptyPlan: false,
 			},
 		},
 	})
@@ -1431,8 +1432,6 @@ func TestAccAppConfigEnvironment_tags_DefaultTags_emptyProviderOnlyTag(t *testin
 }
 
 func TestAccAppConfigEnvironment_tags_DefaultTags_nullOverlappingResourceTag(t *testing.T) {
-	t.Skip("Tags with null values are not correctly handled with the Plugin Framework")
-
 	ctx := acctest.Context(t)
 	resourceName := "aws_appconfig_environment.test"
 	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
@@ -1458,17 +1457,21 @@ func TestAccAppConfigEnvironment_tags_DefaultTags_nullOverlappingResourceTag(t *
 					testAccCheckEnvironmentExists(ctx, resourceName),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.MapExact(map[string]knownvalue.Check{
+						acctest.CtKey1: knownvalue.Null(),
+					})),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTagsAll), knownvalue.MapExact(map[string]knownvalue.Check{
-						acctest.CtKey1: knownvalue.StringExact(acctest.CtProviderValue1),
+						acctest.CtKey1: knownvalue.StringExact(""),
 					})),
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
-						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.Null()),
+						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.MapExact(map[string]knownvalue.Check{
+							acctest.CtKey1: knownvalue.Null(),
+						})),
 						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTagsAll), knownvalue.MapExact(map[string]knownvalue.Check{
-							acctest.CtKey1: knownvalue.StringExact(acctest.CtProviderValue1),
+							acctest.CtKey1: knownvalue.StringExact(""),
 						})),
 					},
 				},
@@ -1488,14 +1491,15 @@ func TestAccAppConfigEnvironment_tags_DefaultTags_nullOverlappingResourceTag(t *
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"tags.key1", // The canonical value returned by the AWS API is ""
+				},
 			},
 		},
 	})
 }
 
 func TestAccAppConfigEnvironment_tags_DefaultTags_nullNonOverlappingResourceTag(t *testing.T) {
-	t.Skip("Tags with null values are not correctly handled with the Plugin Framework")
-
 	ctx := acctest.Context(t)
 	resourceName := "aws_appconfig_environment.test"
 	rName := sdkacctest.RandomWithPrefix(acctest.ResourcePrefix)
@@ -1521,16 +1525,22 @@ func TestAccAppConfigEnvironment_tags_DefaultTags_nullNonOverlappingResourceTag(
 					testAccCheckEnvironmentExists(ctx, resourceName),
 				),
 				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.Null()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.MapExact(map[string]knownvalue.Check{
+						acctest.CtResourceKey1: knownvalue.Null(),
+					})),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTagsAll), knownvalue.MapExact(map[string]knownvalue.Check{
+						acctest.CtResourceKey1: knownvalue.StringExact(""),
 						acctest.CtProviderKey1: knownvalue.StringExact(acctest.CtProviderValue1),
 					})),
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
 					PreApply: []plancheck.PlanCheck{
 						plancheck.ExpectResourceAction(resourceName, plancheck.ResourceActionCreate),
-						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.Null()),
+						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.MapExact(map[string]knownvalue.Check{
+							acctest.CtResourceKey1: knownvalue.Null(),
+						})),
 						plancheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTagsAll), knownvalue.MapExact(map[string]knownvalue.Check{
+							acctest.CtResourceKey1: knownvalue.StringExact(""),
 							acctest.CtProviderKey1: knownvalue.StringExact(acctest.CtProviderValue1),
 						})),
 					},
@@ -1551,6 +1561,9 @@ func TestAccAppConfigEnvironment_tags_DefaultTags_nullNonOverlappingResourceTag(
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"tags.resourcekey1", // The canonical value returned by the AWS API is ""
+				},
 			},
 		},
 	})
