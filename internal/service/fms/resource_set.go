@@ -388,8 +388,8 @@ type resourceResourceSetData struct {
 	ARN         types.String                                     `tfsdk:"arn"`
 	ID          types.String                                     `tfsdk:"id"`
 	ResourceSet fwtypes.ListNestedObjectValueOf[resourceSetData] `tfsdk:"resource_set"`
-	Tags        types.Map                                        `tfsdk:"tags"`
-	TagsAll     types.Map                                        `tfsdk:"tags_all"`
+	Tags        tftags.Map                                       `tfsdk:"tags"`
+	TagsAll     tftags.Map                                       `tfsdk:"tags_all"`
 	Timeouts    timeouts.Value                                   `tfsdk:"timeouts"`
 }
 

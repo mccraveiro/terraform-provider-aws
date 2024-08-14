@@ -15,6 +15,7 @@ import (
 	fwflex "github.com/hashicorp/terraform-provider-aws/internal/framework/flex"
 	fwtypes "github.com/hashicorp/terraform-provider-aws/internal/framework/types"
 	"github.com/hashicorp/terraform-provider-aws/internal/tags"
+	tftags "github.com/hashicorp/terraform-provider-aws/internal/tags"
 	"github.com/hashicorp/terraform-provider-aws/names"
 )
 
@@ -121,7 +122,7 @@ func (d *dataSourceInput) Read(ctx context.Context, req datasource.ReadRequest, 
 		return
 	}
 
-	data.Tags = fwflex.FlattenFrameworkStringValueMap(ctx, out.Tags)
+	// data.Tags = fwflex.FlattenFrameworkStringValueMap(ctx, out.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -141,7 +142,7 @@ type dataSourceInputData struct {
 	SecurityGroups    fwtypes.ListValueOf[types.String]                   `tfsdk:"security_groups"`
 	Sources           fwtypes.ListNestedObjectValueOf[dsInputSource]      `tfsdk:"sources"`
 	State             fwtypes.StringEnum[awstypes.InputState]             `tfsdk:"state"`
-	Tags              types.Map                                           `tfsdk:"tags"`
+	Tags              tftags.Map                                          `tfsdk:"tags"`
 	Type              fwtypes.StringEnum[awstypes.InputType]              `tfsdk:"type"`
 }
 

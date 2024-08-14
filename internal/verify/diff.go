@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/hashicorp/go-cty/cty/gocty"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"github.com/hashicorp/terraform-provider-aws/internal/conns"
 	tftags "github.com/hashicorp/terraform-provider-aws/internal/tags"
@@ -25,9 +26,10 @@ func SetTagsDiff(ctx context.Context, diff *schema.ResourceDiff, meta interface{
 	defaultTagsConfig := meta.(*conns.AWSClient).DefaultTagsConfig
 	ignoreTagsConfig := meta.(*conns.AWSClient).IgnoreTagsConfig
 
-	resourceTags := tftags.New(ctx, diff.Get("tags").(map[string]interface{}))
+	// resourceTags := tftags.New(ctx, diff.Get("tags").(map[string]interface{}))
 
-	allTags := defaultTagsConfig.MergeTags(resourceTags).IgnoreConfig(ignoreTagsConfig)
+	// allTags := defaultTagsConfig.MergeTags(resourceTags).IgnoreConfig(ignoreTagsConfig)
+
 	// To ensure "tags_all" is correctly computed, we explicitly set the attribute diff
 	// when the merger of resource-level tags onto provider-level tags results in n > 0 tags,
 	// otherwise we mark the attribute as "Computed" only when there is a known diff (excluding an empty map)
@@ -35,24 +37,40 @@ func SetTagsDiff(ctx context.Context, diff *schema.ResourceDiff, meta interface{
 	// Reference: https://github.com/hashicorp/terraform-provider-aws/issues/18366
 	// Reference: https://github.com/hashicorp/terraform-provider-aws/issues/19005
 
-	if !diff.GetRawPlan().GetAttr("tags").IsWhollyKnown() {
+	configTags := diff.GetRawConfig().GetAttr("tags")
+	if configTags.IsNull() {
+	}
+
+	planTags := diff.GetRawPlan().GetAttr("tags")
+
+	if !planTags.IsWhollyKnown() {
 		if err := diff.SetNewComputed("tags_all"); err != nil {
 			return fmt.Errorf("setting tags_all to computed: %w", err)
 		}
 		return nil
 	}
 
-	if diff.HasChange("tags") {
-		_, n := diff.GetChange("tags")
-		newTags := tftags.New(ctx, n.(map[string]interface{}))
-
-		if newTags.HasZeroValue() {
-			if err := diff.SetNewComputed("tags_all"); err != nil {
-				return fmt.Errorf("setting tags_all to computed: %w", err)
-			}
+	tags := map[string]*string{}
+	if !planTags.IsNull() {
+		err := gocty.FromCtyValue(planTags, &tags)
+		if err != nil {
+			return fmt.Errorf("reading tags: %w", err)
 		}
+	}
+	resourceTags := tftags.New(ctx, tags)
+	allTags := defaultTagsConfig.MergeTags(resourceTags).IgnoreConfig(ignoreTagsConfig)
 
-		if len(allTags) > 0 && (!newTags.HasZeroValue() || !allTags.HasZeroValue()) {
+	if diff.HasChange("tags") {
+		// _, n := diff.GetChange("tags")
+		// newTags := tftags.New(ctx, n.(map[string]interface{}))
+
+		// if newTags.HasZeroValue() {
+		// 	if err := diff.SetNewComputed("tags_all"); err != nil {
+		// 		return fmt.Errorf("setting tags_all to computed: %w", err)
+		// 	}
+		// }
+
+		if len(allTags) > 0 {
 			if err := diff.SetNew("tags_all", allTags.Map()); err != nil {
 				return fmt.Errorf("setting new tags_all diff: %w", err)
 			}
@@ -64,7 +82,7 @@ func SetTagsDiff(ctx context.Context, diff *schema.ResourceDiff, meta interface{
 			}
 		}
 	} else if !diff.HasChange("tags") {
-		if len(allTags) > 0 && !allTags.HasZeroValue() {
+		if len(allTags) > 0 {
 			if err := diff.SetNew("tags_all", allTags.Map()); err != nil {
 				return fmt.Errorf("setting new tags_all diff: %w", err)
 			}

@@ -98,7 +98,7 @@ func (d *acceleratorDataSource) Read(ctx context.Context, request datasource.Rea
 	}
 
 	conn := d.Meta().GlobalAcceleratorClient(ctx)
-	ignoreTagsConfig := d.Meta().IgnoreTagsConfig
+	// ignoreTagsConfig := d.Meta().IgnoreTagsConfig
 
 	var results []awstypes.Accelerator
 	pages := globalaccelerator.NewListAcceleratorsPaginator(conn, &globalaccelerator.ListAcceleratorsInput{})
@@ -156,15 +156,15 @@ func (d *acceleratorDataSource) Read(ctx context.Context, request datasource.Rea
 
 	data.Attributes = d.flattenAcceleratorAttributesFramework(ctx, attributes)
 
-	tags, err := listTags(ctx, conn, acceleratorARN)
+	// tags, err := listTags(ctx, conn, acceleratorARN)
 
-	if err != nil {
-		response.Diagnostics.AddError("listing tags for Global Accelerator Accelerator", err.Error())
+	// if err != nil {
+	// 	response.Diagnostics.AddError("listing tags for Global Accelerator Accelerator", err.Error())
 
-		return
-	}
+	// 	return
+	// }
 
-	data.Tags = flex.FlattenFrameworkStringValueMapLegacy(ctx, tags.IgnoreAWS().IgnoreConfig(ignoreTagsConfig).Map())
+	// data.Tags = flex.FlattenFrameworkStringValueMapLegacy(ctx, tags.IgnoreAWS().IgnoreConfig(ignoreTagsConfig).Map())
 
 	response.Diagnostics.Append(response.State.Set(ctx, &data)...)
 }
@@ -235,5 +235,5 @@ type acceleratorDataSourceModel struct {
 	IpAddressType    types.String `tfsdk:"ip_address_type"`
 	IpSets           types.List   `tfsdk:"ip_sets"`
 	Name             types.String `tfsdk:"name"`
-	Tags             types.Map    `tfsdk:"tags"`
+	Tags             tftags.Map   `tfsdk:"tags"`
 }

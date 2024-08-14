@@ -251,7 +251,7 @@ type dataSource{{ .DataSource }}Data struct {
 	ID              types.String   `tfsdk:"id"`
 	Name            types.String   `tfsdk:"name"`
 	{{- if .IncludeTags }}
-	Tags            types.Map      `tfsdk:"tags"`
+	Tags            tftags.MapValue `tfsdk:"tags"`
 	{{- end }}
 	Type            types.String   `tfsdk:"type"`
 }

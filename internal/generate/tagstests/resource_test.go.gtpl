@@ -402,6 +402,9 @@ func {{ template "testname" . }}_tags_null(t *testing.T) {
 					})),
 					{{- else -}}
                     statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.Null()),
+                    statecheck.ExpectKnownValue(resourceName, tfjsonpath.New(names.AttrTags), knownvalue.MapExact(map[string]knownvalue.Check{
+						acctest.CtKey1: knownvalue.StringExact(""),
+					})),
 					{{- end }}
 				},
 				ConfigPlanChecks: resource.ConfigPlanChecks{
